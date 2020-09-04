@@ -1,2 +1,4 @@
 __pycache__/
 simulationOutput/
+*.mp4
+*.avi
