@@ -9,9 +9,11 @@ class Vector:
 
     def toTuple(self):
         return (self.x,self.y)
-
     def toPoint(self,size=10):
         return (self.x - size, self.y - size, self.x + size, self.y + size) # (x1,y1,x2,y2)
+    def toHeliocentric(self,scale):
+        # need to make reverse function of Heliocentric.toVector
+        return
 
     def __add__(self,b):
         return Vector(self.x+b.x, self.y+b.y)
@@ -19,7 +21,7 @@ class Vector:
         return Vector(self.x-b.x, self.y-b.y)
     def __mul__(self,b):
         return Vector(self.x*b, self.y*b)
-    def __div__(self,b):
+    def __truediv__(self,b):
         return Vector(self.x/b, self.y/b)
 
 class Sun:
