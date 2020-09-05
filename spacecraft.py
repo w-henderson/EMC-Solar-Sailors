@@ -7,11 +7,11 @@ from coordinateSystems import Vector
 
 class SolarSail:
     def __init__(self,mass,sailSize,sailRotation,position): # mass=float>0, sailSize=float>0, sailRotation=float(0-360)
-        self.mass = mass
+        self.mass = mass # In KG
         self.sailSize = sailSize
         self.sailRotation = sailRotation
         self.force = Vector(0,0)
-        self.velocity = Vector(0,0)
+        self.velocity = Vector(0,0) # In AU/s
         self.position = position
     
     def addForce(self,force): # force=Vector
