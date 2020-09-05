@@ -5,6 +5,8 @@
 
 import math
 
+from constants import Constants
+
 # Vector class, used for screen space coordinate system and for physics manipulation
 class Vector:
     def __init__(self,x,y):
@@ -37,10 +39,9 @@ class Sun:
 
 # Heliocentric class
 class Heliocentric:
-    def __init__(self,long,distance,scale):
-        self.long = long
-        self.distance = distance
-        self.scale = scale
+    def __init__(self,long,distance):
+        self.long = long # In degrees
+        self.distance = distance # In Astronomical Units
 
     # Pythagoras to convert to a screen space vector
     def toVector(self):
@@ -48,4 +49,4 @@ class Heliocentric:
         cos = math.cos(math.radians(self.long)) # Cosine of hypotenuse
         distance = self.distance # Distance from the sun, measured in Astronomical Units, equal to about 150 million km
         positionRelativeToSun = Vector(distance * sin, distance * cos) # Position of planet relative to sun
-        return Sun.position + positionRelativeToSun * self.scale # Position of planet in screen space
+        return Sun.position + positionRelativeToSun * Constants.cameraScale # Position of planet in screen space
