@@ -18,9 +18,11 @@ class Vector:
         return (self.x,self.y) # Simple (x,y) tuple
     def toPoint(self,size=10):
         return (self.x - size, self.y - size, self.x + size, self.y + size) # Point tuple (x1,y1,x2,y2) for rendering
+    # Converts to a heliocentric coordinate
     def toHeliocentric(self,scale):
-        # In development, will return heliocentric equivalent of the screen space vector
-        return
+        distance = self.magnitude
+        long = math.atan(self.x / self.y)
+        return Heliocentric(long,distance,scale)
 
     # Special methods to manipulate the vector
     def __add__(self,b):
