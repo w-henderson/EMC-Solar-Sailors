@@ -1,3 +1,8 @@
+##### EMC SOLAR SAILORS - CONSTANTS #####
+# Programming by William Henderson and Elliot Whybrow
+# Physics and maths by Frankie Lambert, Ella Ireland-Carson and Ollie Temple
+# https://www.exetermathematicsschool.ac.uk/exeter-mathematics-certificate/
+
 class Constants:
     planetMasses = {
         "Sun": 1.989e30,
