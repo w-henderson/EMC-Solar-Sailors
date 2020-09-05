@@ -20,9 +20,12 @@ class Constants:
         "Eris": 1.66e22
     }
 
+    cameraScale = 250
+
     G = 6.67408e-11 # Gravitational constant
     h = 6.62607004e-34 # Planck's constant
     metresInAU = 1.496e11 # Number of metres in 1 AU
-    moonHeight = 384400000 # Moon distance in metres
-
-    cameraScale = 250
+    moonHeight = 384402000 # Moon distance in metres
+    moonHeightScreenSpace = (moonHeight / metresInAU) * cameraScale
+    earthSpeed = 29780 # Earth's speed relative to the Sun in m/s
+    earthSpeedScreenSpace = (earthSpeed / metresInAU) * cameraScale

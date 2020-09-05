@@ -6,7 +6,7 @@ EMC Solar Sailors is a project from Exeter Mathematics School in which we are de
 See the latest simulation demo here: [simulation.mp4](https://github.com/w-henderson/EMC-Solar-Sailors/blob/master/simulation.mp4).
 
 ## Usage
-Run `python main.py <launchDate> <massOfSpacecraft> <sailSize> <sailRotation>` to generate a simulation. Launch date is formatted as `dd/mm/yyyy`, the mass is a float in kg, the sail size is a float  in m^2, and the sail rotation is a float in degrees.
+Run `python main.py <launchDate> <massOfSpacecraft> <sailSize> <sailRotation> <launchTrajectory>` to generate a simulation. Launch date is formatted as `dd/mm/yyyy`, the mass is a float in kg, the sail size is a float  in m^2, the sail rotation is a float in degrees, and the launch trajectory is a float in degrees.
 
 # Credits
 

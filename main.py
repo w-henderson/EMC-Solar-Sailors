@@ -21,6 +21,7 @@ parser.add_argument("date", type=str, help="Date to launch.") # format dd/mm/yyy
 parser.add_argument("mass", type=float, help="Mass of the spacecraft in km.")
 parser.add_argument("sailSize", type=float, help="Area of the sail in m^2.")
 parser.add_argument("sailRotation", type=float, help="Rotation of the sail in degrees.")
+parser.add_argument("launchTrajectory", type=float, help="Trajectory to leave the Earth's gravity in degrees.")
 args = parser.parse_args()
 
 # Parse date argument from dd/mm/yyyy to a datetime object
@@ -65,9 +66,15 @@ def simulate(startDate,cutoff=365): # Launch date is a datetime object and cutof
     os.mkdir(os.getenv("APPDATA")+"\\EMCSS_simulationOutput")
     currentFrame = 0
 
+    # Calculate earth's current direction to apply to sail
+    earthPositionsBefore = [datetimeToPositions(startDate - datetime.timedelta(1))["Earth"], datetimeToPositions(startDate)["Earth"]]
+    earthDirection = (earthPositionsBefore[1].toVector() - earthPositionsBefore[0].toVector()).normalized
+    sailRelativeToEarth = Vector(math.sin(math.radians(args.launchTrajectory)) * Constants.moonHeightScreenSpace, -math.cos(math.radians(args.launchTrajectory)) * Constants.moonHeightScreenSpace)
+    launchPosition = earthPositionsBefore[1].toVector() + sailRelativeToEarth
+
     # Set up solar sail with arguments
-    solarSail = SolarSail(args.mass, args.sailSize, args.sailRotation, Vector(600,500))
-    solarSail.velocity = Vector(0,-2.5e-5) # THIS IS FOR TESTING, IN THE REAL SIMULATION WE WON'T SET AN INITIAL VELOCITY BECAUSE IT'S PHYSICALLY IMPOSSIBLE
+    solarSail = SolarSail(args.mass, args.sailSize, args.sailRotation, launchPosition)
+    solarSail.velocity = earthDirection * Constants.earthSpeedScreenSpace
 
     # Loop through dates (one frame = one day for simplicity)
     for date in (startDate + datetime.timedelta(n) for n in range(cutoff)):
