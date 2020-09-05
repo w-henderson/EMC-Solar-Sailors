@@ -34,7 +34,7 @@ def datetimeToPositions(dt):
     solarSystemHeliocentric = {}
     for planet in solarSystemObject.keys():
         planetObject = solarSystemObject[planet] # tuple of (longitude, latitude, distance)
-        solarSystemHeliocentric[planet] = Heliocentric(planetObject[0], planetObject[2], Constants.cameraScale)
+        solarSystemHeliocentric[planet] = Heliocentric(planetObject[0], planetObject[2])
     return solarSystemHeliocentric
 
 # Render frame of the simulation
@@ -79,13 +79,13 @@ def simulate(startDate,cutoff=365): # Launch date is a datetime object and cutof
             r = (planets[planet].toVector() - solarSail.position).magnitude / Constants.cameraScale # measured in AU
             r = r * Constants.metresInAU # Convert to metres
             gravitationalForce = (Constants.G * args.mass * Constants.planetMasses[planet]) / r**2 # Gravitational force magnitude
-            solarSail.addForce((planets[planet].toVector() - solarSail.position).normalized * (gravitationalForce / Constants.metresInAU) * Constants.cameraScale)
+            solarSail.addForce((planets[planet].toVector() - solarSail.position).normalized * gravitationalForce)
 
         # Apply the sun's gravity
         sunDistance = (Sun.position - solarSail.position).magnitude / Constants.cameraScale # measured in AU
         sunDistance = sunDistance * Constants.metresInAU # Convert to metres
         sunGravitationalForce = (Constants.G * args.mass * Constants.planetMasses["Sun"]) / sunDistance**2
-        solarSail.addForce((Sun.position - solarSail.position).normalized * (sunGravitationalForce / Constants.metresInAU) * Constants.cameraScale)
+        solarSail.addForce((Sun.position - solarSail.position).normalized * sunGravitationalForce)
 
         # Calculate the acceleration and update the solar sail's position
         acceleration = solarSail.force / solarSail.mass

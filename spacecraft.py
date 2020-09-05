@@ -4,6 +4,7 @@
 # https://www.exetermathematicsschool.ac.uk/exeter-mathematics-certificate/
 
 from coordinateSystems import Vector
+from constants import Constants
 
 class SolarSail:
     def __init__(self,mass,sailSize,sailRotation,position): # mass=float>0, sailSize=float>0, sailRotation=float(0-360)
@@ -14,8 +15,8 @@ class SolarSail:
         self.velocity = Vector(0,0) # In AU/s
         self.position = position
     
-    def addForce(self,force): # force=Vector
-        self.force += force
+    def addForce(self,force): # force=Vector, should be in Newtons I think...
+        self.force += (force / Constants.metresInAU) * Constants.cameraScale
 
     def updatePosition(self,acceleration,simulatedSecondsSinceLastUpdate):
         self.position += self.velocity*simulatedSecondsSinceLastUpdate + acceleration*0.5*(simulatedSecondsSinceLastUpdate**2) # s = vt + 0.5at^2
