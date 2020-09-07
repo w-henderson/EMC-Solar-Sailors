@@ -24,6 +24,9 @@ class Constants:
 
     G = 6.67408e-11 # Gravitational constant
     h = 6.62607004e-34 # Planck's constant
+    c = 299792458 # Speed of light
+
+    sunPower = 3.846e26 # Power of the sun in watts
     metresInAU = 1.496e11 # Number of metres in 1 AU
     moonHeight = 384402000 # Moon distance in metres
     moonHeightScreenSpace = (moonHeight / metresInAU) * cameraScale
