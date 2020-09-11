@@ -1,5 +1,5 @@
 ##### EMC SOLAR SAILORS - MAIN #####
-# Programming by William Henderson and Elliot Whybrow
+# Programming by William Henderson, Elliot Whybrow
 # Physics and maths by Frankie Lambert, Ella Ireland-Carson and Ollie Temple
 # https://www.exetermathematicsschool.ac.uk/exeter-mathematics-certificate/
 
@@ -18,10 +18,12 @@ from constants import Constants # Constants are stored in a separate file for re
 # Parse arguments
 parser = argparse.ArgumentParser(description="Solar Sailors EMC Project")
 parser.add_argument("date", type=str, help="Date to launch.") # format dd/mm/yyyy
-parser.add_argument("mass", type=float, help="Mass of the spacecraft in km.")
-parser.add_argument("sailSize", type=float, help="Area of the sail in m^2.")
-parser.add_argument("sailRotation", type=float, help="Rotation of the sail in degrees.")
-parser.add_argument("launchTrajectory", type=float, help="Trajectory to leave the Earth's gravity in degrees.")
+parser.add_argument("--mass", type=float, default=1000.0, help="Mass of the spacecraft in km.")
+parser.add_argument("--sailSize", type=float, default=32.0, help="Area of the sail in m^2.")
+parser.add_argument("--sailRotation", type=float, default=0.0, help="Rotation of the sail in degrees.")
+parser.add_argument("--calculationsPerDay", type=int, default=24, help="Calculations to perform per day. Higher number = higher accuracy of position.")
+parser.add_argument("--simulationLength", type=int, default=365, help="Number of days to simulate.")
+parser.add_argument("--accountForPlanets", default=False, help="Account for gravitational fields other than the sun.")
 args = parser.parse_args()
 
 # Parse date argument from dd/mm/yyyy to a datetime object
@@ -60,49 +62,54 @@ def render(planets,sail,date,frame,acceleration):
     image.save(os.getenv("APPDATA")+"\\EMCSS_simulationOutput\\frame"+str(frame).zfill(4)+".png")
 
 # Run simulation
-def simulate(startDate,cutoff=365): # Launch date is a datetime object and cutoff is the number of days to simulate
+def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetime object and cutoff is the number of days to simulate
     # Set up output directory
     if "EMCSS_simulationOutput" in os.listdir(os.getenv("APPDATA")): shutil.rmtree(os.getenv("APPDATA")+"\\EMCSS_simulationOutput")
     os.mkdir(os.getenv("APPDATA")+"\\EMCSS_simulationOutput")
     currentFrame = 0
 
     # Calculate earth's current direction to apply to sail
-    earthPositionsBefore = [datetimeToPositions(startDate - datetime.timedelta(1))["Earth"], datetimeToPositions(startDate)["Earth"]]
-    earthDirection = (earthPositionsBefore[1].toVector() - earthPositionsBefore[0].toVector()).normalized
-    sailRelativeToEarth = Vector(math.sin(math.radians(args.launchTrajectory)) * Constants.moonHeightScreenSpace, -math.cos(math.radians(args.launchTrajectory)) * Constants.moonHeightScreenSpace)
-    launchPosition = earthPositionsBefore[1].toVector() + sailRelativeToEarth
+    earthPositionsBefore = [datetimeToPositions(startDate - datetime.timedelta(1/args.calculationsPerDay))["Earth"], datetimeToPositions(startDate)["Earth"]]
+    earthVelocity = (earthPositionsBefore[1].toVector() - earthPositionsBefore[0].toVector()) / ((60 * 60 * 24) / args.calculationsPerDay)
+    #sailRelativeToEarth = Vector(math.sin(math.radians(args.launchTrajectory)) * Constants.moonHeightScreenSpace, -math.cos(math.radians(args.launchTrajectory)) * Constants.moonHeightScreenSpace)
+    launchPosition = earthPositionsBefore[1].toVector() # + sailRelativeToEarth
 
     # Set up solar sail with arguments
     solarSail = SolarSail(args.mass, args.sailSize, args.sailRotation, launchPosition)
-    solarSail.velocity = earthDirection * Constants.earthSpeedScreenSpace
+    solarSail.velocity = earthVelocity
 
     # Loop through dates (one frame = one day for simplicity)
     for date in (startDate + datetime.timedelta(n) for n in range(cutoff)):
-        # Get planet positions at date
-        planets = datetimeToPositions(date)
+        # Perform multiple calculations per day
+        for calc in range(args.calculationsPerDay):
+            date += datetime.timedelta(1 / args.calculationsPerDay)
+            # Get planet positions at date
+            planets = datetimeToPositions(date)
 
-        # Iterate through planets and apply gravity from each one to the solar sail
-        for planet in planets.keys():
-            r = (planets[planet].toVector() - solarSail.position).magnitude / Constants.cameraScale # measured in AU
-            r = r * Constants.metresInAU # Convert to metres
-            gravitationalForce = (Constants.G * args.mass * Constants.planetMasses[planet]) / r**2 # Gravitational force magnitude
-            solarSail.addForce((planets[planet].toVector() - solarSail.position).normalized * gravitationalForce)
+            # Iterate through planets and apply gravity from each one to the solar sail (disabled by default)
+            if args.accountForPlanets:
+                for planet in planets.keys():
+                    r = (planets[planet].toVector() - solarSail.position).magnitude / Constants.cameraScale # measured in AU
+                    r = r * Constants.metresInAU # Convert to metres
+                    gravitationalForce = (Constants.G * args.mass * Constants.planetMasses[planet]) / r**2 # Gravitational force magnitude
+                    solarSail.addForce((planets[planet].toVector() - solarSail.position).normalized * gravitationalForce)
 
-        # Apply the sun's gravity
-        sunDistance = (Sun.position - solarSail.position).magnitude / Constants.cameraScale # measured in AU
-        sunDistance = sunDistance * Constants.metresInAU # Convert to metres
-        sunGravitationalForce = (Constants.G * args.mass * Constants.planetMasses["Sun"]) / sunDistance**2
-        solarSail.addForce((Sun.position - solarSail.position).normalized * sunGravitationalForce)
+            # Apply the sun's gravity
+            sunDistance = (Sun.position - solarSail.position).magnitude / Constants.cameraScale # measured in AU
+            sunDistance = sunDistance * Constants.metresInAU # Convert to metres
+            sunGravitationalForce = (Constants.G * args.mass * Constants.planetMasses["Sun"]) / sunDistance**2
+            solarSail.addForce((Sun.position - solarSail.position).normalized * sunGravitationalForce)
 
-        # Calculate the acceleration and update the solar sail's position
-        acceleration = solarSail.force / solarSail.mass
-        solarSail.updatePosition(acceleration, 60*60*24)
+            # Calculate the acceleration and update the solar sail's position
+            acceleration = solarSail.force / solarSail.mass
+            solarSail.updatePosition(acceleration, (60*60*24) / args.calculationsPerDay)
+
+            print("Calculated simulation for "+date.strftime("%H:%M, %d/%m/%y")+", solar sail position was "+str(solarSail.position.toTuple())+"...", end="\r")
 
         # Render the current frame
         currentFrame += 1
         render(planets,solarSail,date,currentFrame,acceleration)
-        print("Rendered simulation for "+date.strftime("%d/%m/%y")+", solar sail position was "+str(solarSail.position.toTuple())+"...", end="\r")
-
+        
     # Use FFMPEG to convert the image sequence into a final mp4 video
     os.system('ffmpeg -i "'+os.getenv("APPDATA")+'\\EMCSS_simulationOutput\\frame%04d.png" -framerate 30 -c:v libx264 -crf 22 simulation.mp4')
 
