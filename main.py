@@ -8,6 +8,7 @@ import datetime # To parse and manipulate dates
 import argparse # To parse arguments
 import shutil # To recursively remove output directory
 import math # To do trigonometry
+import time # To help improve efficiency
 import os # To make output directory
 
 from PIL import Image, ImageDraw, ImageFont # To render images
@@ -23,7 +24,8 @@ parser.add_argument("--sailSize", type=float, default=32.0, help="Area of the sa
 parser.add_argument("--sailRotation", type=float, default=0.0, help="Rotation of the sail in degrees.")
 parser.add_argument("--calculationsPerDay", type=int, default=24, help="Calculations to perform per day. Higher number = higher accuracy of position.")
 parser.add_argument("--simulationLength", type=int, default=365, help="Number of days to simulate.")
-parser.add_argument("--accountForPlanets", default=False, help="Account for gravitational fields other than the sun.")
+parser.add_argument("--accountForPlanets", action="store_true", help="Account for gravitational fields other than the sun.")
+parser.add_argument("--lossless", action="store_true", help="Use lossless compression.")
 args = parser.parse_args()
 
 # Parse date argument from dd/mm/yyyy to a datetime object
@@ -58,8 +60,9 @@ def render(planets,sail,date,frame,acceleration):
         draw.ellipse(planets[planet].toVector().toPoint(), fill="white") # Planet circle
         draw.text(planets[planet].toVector().toTuple(), planet, fill="red", font=font) # Planet name
 
-    # Save the rendered image losslessly in appdata
-    image.save(os.getenv("APPDATA")+"\\EMCSS_simulationOutput\\frame"+str(frame).zfill(4)+".png")
+    # Save the rendered image in appdata
+    if args.lossless: image.save(os.getenv("APPDATA")+"\\EMCSS_simulationOutput\\frame"+str(frame).zfill(4)+".png", compress_level=1)
+    else: image.save(os.getenv("APPDATA")+"\\EMCSS_simulationOutput\\frame"+str(frame).zfill(4)+".jpeg", quality=90)
 
 # Run simulation
 def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetime object and cutoff is the number of days to simulate
@@ -67,6 +70,8 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
     if "EMCSS_simulationOutput" in os.listdir(os.getenv("APPDATA")): shutil.rmtree(os.getenv("APPDATA")+"\\EMCSS_simulationOutput")
     os.mkdir(os.getenv("APPDATA")+"\\EMCSS_simulationOutput")
     currentFrame = 0
+    totalRenderingTime = 0
+    totalCalculatingTime = 0
 
     # Calculate earth's current direction to apply to sail
     earthPositionsBefore = [datetimeToPositions(startDate - datetime.timedelta(1/args.calculationsPerDay))["Earth"], datetimeToPositions(startDate)["Earth"]]
@@ -80,6 +85,8 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
 
     # Loop through dates (one frame = one day for simplicity)
     for date in (startDate + datetime.timedelta(n) for n in range(cutoff)):
+        timeBeforeCalculation = time.time()
+
         # Perform multiple calculations per day
         for calc in range(args.calculationsPerDay):
             date += datetime.timedelta(1 / args.calculationsPerDay)
@@ -105,13 +112,23 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
             solarSail.updatePosition(acceleration, (60*60*24) / args.calculationsPerDay)
 
             print("Calculated simulation for "+date.strftime("%H:%M, %d/%m/%y")+", solar sail position was "+str(solarSail.position.toTuple())+"...", end="\r")
+        
+        totalCalculatingTime += time.time() - timeBeforeCalculation
 
         # Render the current frame
         currentFrame += 1
+        timeBeforeRender = time.time()
         render(planets,solarSail,date,currentFrame,acceleration)
+        totalRenderingTime += time.time() - timeBeforeRender
         
     # Use FFMPEG to convert the image sequence into a final mp4 video
-    os.system('ffmpeg -i "'+os.getenv("APPDATA")+'\\EMCSS_simulationOutput\\frame%04d.png" -framerate 30 -c:v libx264 -crf 22 simulation.mp4')
+    if args.lossless: os.system('ffmpeg -i "'+os.getenv("APPDATA")+'\\EMCSS_simulationOutput\\frame%04d.png" -framerate 30 -c:v libx264 -crf 22 simulation.mp4')
+    else: os.system('ffmpeg -i "'+os.getenv("APPDATA")+'\\EMCSS_simulationOutput\\frame%04d.jpeg" -framerate 30 -c:v libx264 -crf 22 simulation.mp4')
+
+    # Output metrics
+    print("\nAverage render time: "+str(round(totalRenderingTime/currentFrame,2))+"s")
+    print("Total time spent rendering: "+str(round(totalRenderingTime,2))+"s")
+    print("Total time spent calculating: "+str(round(totalCalculatingTime,2))+"s")
 
 # Start the simulation
 if __name__ == "__main__":

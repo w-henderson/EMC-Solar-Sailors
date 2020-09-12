@@ -12,6 +12,7 @@ Run `python main.py <launchDate>` for a quick simulation without changing any pa
 - `--calculationsPerDay` (int): number of calculations to simulate per day, defaults to 24. The more calculations, the higher the accuracy. Don't go below 24.
 - `--simulationLength` (int): number of days to simulate for, defaults to 365.
 - `--accountForPlanets` (switch/bool): whether to account for gravitational fields other than the sun's, False if not specified. This greatly increases the simulation time but may increase accuracy by about 0.015%.
+- `--lossless` (switch/bool): whether to use lossless compression, False if not specified. Lossless compression (png rather than jpeg) takes twice as long to render but may improve image quality.
 
 ### Example Code
 This is what I've been using to test the latest commit with a calculation every second.
