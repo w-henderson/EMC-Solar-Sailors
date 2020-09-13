@@ -3,7 +3,7 @@
 # Physics and maths by Frankie Lambert, Ella Ireland-Carson and Ollie Temple
 # https://www.exetermathematicsschool.ac.uk/exeter-mathematics-certificate/
 
-from constants import Constants
+from .constants import Constants
 
 class Photon:
     def __init__(self,wavelength):

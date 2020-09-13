@@ -3,8 +3,8 @@
 # Physics and maths by Frankie Lambert, Ella Ireland-Carson and Ollie Temple
 # https://www.exetermathematicsschool.ac.uk/exeter-mathematics-certificate/
 
-from coordinateSystems import Vector
-from constants import Constants
+from .coordinateSystems import Vector
+from .constants import Constants
 
 class SolarSail:
     def __init__(self,mass,sailSize,sailRotation,position): # mass=float>0, sailSize=float>0, sailRotation=float(0-360)

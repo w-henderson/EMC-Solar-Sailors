@@ -1,5 +1,5 @@
 ##### EMC SOLAR SAILORS - MAIN #####
-# Programming by William Henderson, Elliot Whybrow
+# Programming by William Henderson and Elliot Whybrow
 # Physics and maths by Frankie Lambert, Ella Ireland-Carson and Ollie Temple
 # https://www.exetermathematicsschool.ac.uk/exeter-mathematics-certificate/
 
@@ -12,9 +12,9 @@ import time # To help improve efficiency
 import os # To make output directory
 
 from PIL import Image, ImageDraw, ImageFont # To render images
-from coordinateSystems import Vector, Heliocentric, Sun # Custom classes for coordinate systems
-from spacecraft import SolarSail # Custom class for solar sail
-from constants import Constants # Constants are stored in a separate file for readability
+from modules.coordinateSystems import Vector, Heliocentric, Sun # Custom classes for coordinate systems
+from modules.spacecraft import SolarSail # Custom class for solar sail
+from modules.constants import Constants # Constants are stored in a separate file for readability
 
 # Parse arguments
 parser = argparse.ArgumentParser(description="Solar Sailors EMC Project")
@@ -26,6 +26,7 @@ parser.add_argument("--calculationsPerDay", type=int, default=24, help="Calculat
 parser.add_argument("--simulationLength", type=int, default=365, help="Number of days to simulate.")
 parser.add_argument("--accountForPlanets", action="store_true", help="Account for gravitational fields other than the sun.")
 parser.add_argument("--lossless", action="store_true", help="Use lossless compression.")
+parser.add_argument("--exportAsJSON", action="store_true", help="Export as JSON tracking data instead of a video.")
 args = parser.parse_args()
 
 # Parse date argument from dd/mm/yyyy to a datetime object
@@ -63,6 +64,23 @@ def render(planets,sail,date,frame,acceleration):
     # Save the rendered image in appdata
     if args.lossless: image.save(os.getenv("APPDATA")+"\\EMCSS_simulationOutput\\frame"+str(frame).zfill(4)+".png", compress_level=1)
     else: image.save(os.getenv("APPDATA")+"\\EMCSS_simulationOutput\\frame"+str(frame).zfill(4)+".jpeg", quality=90)
+
+tracks = []
+def trackingExport(planets,sail):
+    # Add tracks for sun and sail
+    sailPosition = sail.position.toTuple()
+    trackThisFrame = {
+        "Sun": [0,0,0],
+        "Sail": [sailPosition[0] - 960, sailPosition[1] - 540, 0] # Subtracts sun position because sun is central
+    }
+
+    # Iterate through planets and add their positions
+    for planet in planets.keys():
+        planetPosition = planets[planet].toVector().toTuple()
+        trackThisFrame[planet] = [planetPosition[0] - 960, planetPosition[1] - 540, 0]
+
+    # Add all the tracking data from this frame to the master track
+    tracks.append(trackThisFrame)
 
 # Run simulation
 def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetime object and cutoff is the number of days to simulate
@@ -115,15 +133,20 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
         
         totalCalculatingTime += time.time() - timeBeforeCalculation
 
-        # Render the current frame
+        # Render or export the current frame
         currentFrame += 1
         timeBeforeRender = time.time()
-        render(planets,solarSail,date,currentFrame,acceleration)
+        if not args.exportAsJSON: render(planets,solarSail,date,currentFrame,acceleration) # Standard render
+        else: trackingExport(planets,solarSail) # Export JSON tracking data for Blender or more processing somewhere else
         totalRenderingTime += time.time() - timeBeforeRender
         
-    # Use FFMPEG to convert the image sequence into a final mp4 video
-    if args.lossless: os.system('ffmpeg -i "'+os.getenv("APPDATA")+'\\EMCSS_simulationOutput\\frame%04d.png" -framerate 30 -c:v libx264 -crf 22 simulation.mp4')
-    else: os.system('ffmpeg -i "'+os.getenv("APPDATA")+'\\EMCSS_simulationOutput\\frame%04d.jpeg" -framerate 30 -c:v libx264 -crf 22 simulation.mp4')
+    if not args.exportAsJSON:
+        # Use FFMPEG to convert the image sequence into a final mp4 video
+        if args.lossless: os.system('ffmpeg -i "'+os.getenv("APPDATA")+'\\EMCSS_simulationOutput\\frame%04d.png" -framerate 30 -c:v libx264 -crf 22 simulation.mp4')
+        else: os.system('ffmpeg -i "'+os.getenv("APPDATA")+'\\EMCSS_simulationOutput\\frame%04d.jpeg" -framerate 30 -c:v libx264 -crf 22 simulation.mp4')
+    else:
+        with open("simulation.json", "w") as f:
+            f.write(repr(tracks).replace("'", '"')) # Quick and easy JSON export
 
     # Output metrics
     print("\nAverage render time: "+str(round(totalRenderingTime/currentFrame,2))+"s")

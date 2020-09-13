@@ -2,3 +2,4 @@ __pycache__/
 simulationOutput/
 *.gif
 *.mp4
+*.json

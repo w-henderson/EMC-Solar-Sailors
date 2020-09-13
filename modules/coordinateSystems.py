@@ -5,7 +5,7 @@
 
 import math
 
-from constants import Constants
+from .constants import Constants
 
 # Vector class, used for screen space coordinate system and for physics manipulation
 class Vector:
