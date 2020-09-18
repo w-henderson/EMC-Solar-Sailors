@@ -15,12 +15,13 @@ from PIL import Image, ImageDraw, ImageFont # To render images
 from modules.coordinateSystems import Vector, Heliocentric, Sun # Custom classes for coordinate systems
 from modules.spacecraft import SolarSail # Custom class for solar sail
 from modules.constants import Constants # Constants are stored in a separate file for readability
+from modules.photons import Photon # For calculations relating to photons
 
 # Parse arguments
 parser = argparse.ArgumentParser(description="Solar Sailors EMC Project")
 parser.add_argument("date", type=str, help="Date to launch.") # format dd/mm/yyyy
 parser.add_argument("--mass", type=float, default=1000.0, help="Mass of the spacecraft in km.")
-parser.add_argument("--sailSize", type=float, default=32.0, help="Area of the sail in m^2.")
+parser.add_argument("--sailSize", type=float, default=10.0, help="Side length of the sail in metres.")
 parser.add_argument("--sailRotation", type=float, default=0.0, help="Rotation of the sail in degrees.")
 parser.add_argument("--calculationsPerDay", type=int, default=24, help="Calculations to perform per day. Higher number = higher accuracy of position.")
 parser.add_argument("--simulationLength", type=int, default=365, help="Number of days to simulate.")
@@ -44,16 +45,23 @@ def datetimeToPositions(dt):
     return solarSystemHeliocentric
 
 # Render frame of the simulation
-def render(planets,sail,date,frame,acceleration):
+def render(planets,sail,date,frame,velocity, photonForce):
     # Set up PIL image
     image = Image.new("RGB", Vector(1920,1080).toTuple())
     font = ImageFont.truetype("font_inter.otf",30)
     draw = ImageDraw.Draw(image)
 
-    # Draw simple objects (sun, sail and text)
+    # Draw sun and info text
     draw.ellipse(Sun.position.toPoint(size=25), fill="yellow") # Render sun
-    draw.text((0,0), "Date: "+date.strftime("%d/%m/%y")+"\nAcceleration: "+str(acceleration.magnitude)+" m/s^2", fill="red", font=font) # Render info text
-    draw.ellipse(sail.position.toPoint(size=5), fill="orange") # Render sail
+    infoString = "\n".join([
+        "Date: " + date.strftime("%d/%m/%y"),
+        "Velocity: " + str(velocity.magnitude) + "m/s",
+        "Photon force: " + str(photonForce.magnitude) + "N"
+    ])
+    draw.text((0,0), infoString, fill="red", font=font) # Render info text
+    
+    # Draw sail
+    draw.line(sail.toPoint(8), fill="orange", width=4) # Draw line to represent sail
     draw.text(sail.position.toTuple(), "SOLAR SAIL", fill="white", font=font) # Render sail text
     
     # Iterate through the planets and draw them
@@ -125,6 +133,15 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
             sunGravitationalForce = (Constants.G * args.mass * Constants.planetMasses["Sun"]) / sunDistance**2
             solarSail.addForce((Sun.position - solarSail.position).normalized * sunGravitationalForce)
 
+            # Apply the force from photons on the sail
+            photon = Photon(700) # photon with wavelength 700 ("average")
+            location = ((solarSail.position - Sun.position) / Constants.cameraScale) * Constants.metresInAU
+            photonMomentumVector = location.normalized * photon.momentum * photon.collisionsAtPosition(solarSail.sailSize ** 2, location.magnitude)
+            photonMomentumVector *= solarSail.areaFacingSun() / solarSail.sailSize ** 2 # Account for how much the sail is facing the sun
+            solarSail.addForce(photonMomentumVector / ((60*60*24) / args.calculationsPerDay))
+
+            # * DOES NOT ACCOUNT FOR PHOTON BOUNCING YET *
+
             # Calculate the acceleration and update the solar sail's position
             acceleration = solarSail.force / solarSail.mass
             solarSail.updatePosition(acceleration, (60*60*24) / args.calculationsPerDay)
@@ -135,7 +152,7 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
         # Render or export the current frame
         currentFrame += 1
         timeBeforeRender = time.time()
-        if not args.exportAsJSON: render(planets,solarSail,date,currentFrame,acceleration) # Standard render
+        if not args.exportAsJSON: render(planets,solarSail,date,currentFrame,solarSail.velocity,photonMomentumVector) # Standard render
         else: trackingExport(planets,solarSail) # Export JSON tracking data for Blender or more processing somewhere else
         totalRenderingTime += time.time() - timeBeforeRender
         
