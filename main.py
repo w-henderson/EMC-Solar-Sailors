@@ -146,7 +146,7 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
             # Calculate the acceleration and update the solar sail's position
             acceleration = solarSail.force / solarSail.mass
             solarSail.updatePosition(acceleration, (60*60*24) / args.calculationsPerDay)
-        
+            
         print("Calculated simulation up to "+date.strftime("%d/%m/%y")+", solar sail position was "+str(solarSail.position.toTuple())+"...", end="\r")
         totalCalculatingTime += time.time() - timeBeforeCalculation
 

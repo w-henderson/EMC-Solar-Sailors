@@ -3,7 +3,7 @@
 # EMC Solar Sailors
 EMC Solar Sailors is a project from Exeter Mathematics School in which we are designing a spacecraft to harness the power of photons to get to Mars. This repo contains the code for our simulations and calculations.
 
-See the latest simulation demo on Streamable: [https://streamable.com/l6im9k](https://streamable.com/l6im9k).
+See the latest simulation demo on Streamable: [https://streamable.com/7dkyk2](https://streamable.com/7dkyk2).
 
 ## Usage
 Run `python main.py <launchDate>` for a quick simulation without changing any parameters. Launch date is required and should be provided in the format `dd/mm/yyyy`. The optional parameters are as follows:

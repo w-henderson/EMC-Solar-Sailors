@@ -29,7 +29,8 @@ class SolarSail:
     def areaFacingSun(self):
         positionHeliographic = self.position.toHeliocentric()
         rot = self.sailRotation if self.sailRotation < 180 else self.sailRotation - 180
-        return (self.sailSize * math.sin((positionHeliographic.long - rot) * (math.pi / 180))) ** 2
+        facingSun = (self.sailSize * math.sin((positionHeliographic.long - rot) * (math.pi / 180))) ** 2
+        return facingSun
 
     def toPoint(self, renderSize):
         cornerPosition = Vector(math.sin(self.sailRotation * (math.pi / 180)) * -5, math.cos(self.sailRotation * (math.pi / 180)) * 5)

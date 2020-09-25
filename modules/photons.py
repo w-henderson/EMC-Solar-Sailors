@@ -32,8 +32,8 @@ class GeneralSunPhoton:
             totalArea += area
         
         self.perSecond = area
-        self.momentum = Constants.h / 700
+        self.momentum = Constants.h / (700 * 1e-9)
         
     def collisionsAtPosition(self,area,distance):
-        perSqM = self.perSecond / (4 * pi * distance**2)
-        return perSqM * area
+        perSqM = (area * self.perSecond) / (4 * pi * distance**2)
+        return perSqM
