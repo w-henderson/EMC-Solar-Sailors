@@ -17,3 +17,23 @@ class Photon:
     def collisionsAtPosition(self,area,distance):
         perSqM = self.perSecond / (4 * pi * distance**2)
         return perSqM * area
+
+class GeneralSunPhoton:
+    def __init__(self):
+        photonOfEachWavelength = [Photon(wavelength) for wavelength in range(1,2500)]
+
+        # Trapezium rule to calculate area
+        totalArea = 0
+        for i in range(2498):
+            sideL = photonOfEachWavelength[i].perSecond
+            sideR = photonOfEachWavelength[i + 1].perSecond
+            width = 1
+            area = ((sideL + sideR) / 2) * width
+            totalArea += area
+        
+        self.perSecond = area
+        self.momentum = Constants.h / 700
+        
+    def collisionsAtPosition(self,area,distance):
+        perSqM = self.perSecond / (4 * pi * distance**2)
+        return perSqM * area

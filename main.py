@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont # To render images
 from modules.coordinateSystems import Vector, Heliocentric, Sun # Custom classes for coordinate systems
 from modules.spacecraft import SolarSail # Custom class for solar sail
 from modules.constants import Constants # Constants are stored in a separate file for readability
-from modules.photons import Photon # For calculations relating to photons
+from modules.photons import Photon, GeneralSunPhoton # For calculations relating to photons
 
 # Parse arguments
 parser = argparse.ArgumentParser(description="Solar Sailors EMC Project")
@@ -109,6 +109,8 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
     solarSail = SolarSail(args.mass, args.sailSize, args.sailRotation, launchPosition)
     solarSail.velocity = earthVelocity
 
+    photon = GeneralSunPhoton()
+
     # Loop through dates (one frame = one day for simplicity)
     for date in (startDate + datetime.timedelta(n) for n in range(cutoff)):
         timeBeforeCalculation = time.time()
@@ -134,7 +136,6 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
             solarSail.addForce((Sun.position - solarSail.position).normalized * sunGravitationalForce)
 
             # Apply the force from photons on the sail
-            photon = Photon(700) # photon with wavelength 700 ("average")
             location = ((solarSail.position - Sun.position) / Constants.cameraScale) * Constants.metresInAU
             photonMomentumVector = location.normalized * photon.momentum * photon.collisionsAtPosition(solarSail.sailSize ** 2, location.magnitude)
             photonMomentumVector *= solarSail.areaFacingSun() / solarSail.sailSize ** 2 # Account for how much the sail is facing the sun
