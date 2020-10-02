@@ -136,8 +136,15 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
             solarSail.addForce((Sun.position - solarSail.position).normalized * sunGravitationalForce)
 
             # Apply the force from photons on the sail
+            sailTrajectoryRadians = math.radians(args.sailRotation)
+            if sailTrajectoryRadians > math.pi: sailTrajectoryRadians -= math.pi
+            if sailTrajectoryRadians < math.pi / 2:
+                forceDirection = Vector(math.tan(sailTrajectoryRadians), 1)
+            else:
+                forceDirection = Vector(math.tan(180-sailTrajectoryRadians), -1)
+            forceDirection = Vector(forceDirection.y, -forceDirection.x) # Rotate 90
             location = ((solarSail.position - Sun.position) / Constants.cameraScale) * Constants.metresInAU
-            photonMomentumVector = location.normalized * photon.momentum * photon.collisionsAtPosition(solarSail.sailSize ** 2, location.magnitude)
+            photonMomentumVector = forceDirection.normalized * 2 * photon.momentum * photon.collisionsAtPosition(solarSail.sailSize ** 2, location.magnitude)
             photonMomentumVector *= solarSail.areaFacingSun() / solarSail.sailSize ** 2 # Account for how much the sail is facing the sun
             solarSail.addForce(photonMomentumVector / ((60*60*24) / args.calculationsPerDay))
 
