@@ -45,7 +45,7 @@ def datetimeToPositions(dt):
     return solarSystemHeliocentric
 
 # Render frame of the simulation
-def render(planets,sail,date,frame,velocity, photonForce):
+def render(planets, sail, date, frame, velocity, photonForce, forceDirection, colls):
     # Set up PIL image
     image = Image.new("RGB", Vector(1920,1080).toTuple())
     font = ImageFont.truetype("font_inter.otf",30)
@@ -56,12 +56,15 @@ def render(planets,sail,date,frame,velocity, photonForce):
     infoString = "\n".join([
         "Date: " + date.strftime("%d/%m/%y"),
         "Velocity: " + str(velocity.magnitude) + "m/s",
-        "Photon force: " + str(photonForce.magnitude) + "N"
+        "Photon force: " + str(photonForce.magnitude) + "N",
+        "Area facing sun: " + str(sail.areaFacingSun()),
+        "Collisions: " + str(colls)
     ])
     draw.text((0,0), infoString, fill="red", font=font) # Render info text
     
-    # Draw sail
+    # Draw sail and force arrow
     draw.line(sail.toPoint(8), fill="orange", width=4) # Draw line to represent sail
+    draw.line((sail.position.x, sail.position.y, sail.position.x + forceDirection.x * photonForce.magnitude, sail.position.y + forceDirection.y * photonForce.magnitude), fill="red", width=4) # Draw line to represent force vector
     draw.text(sail.position.toTuple(), "SOLAR SAIL", fill="white", font=font) # Render sail text
     
     # Iterate through the planets and draw them
@@ -74,7 +77,7 @@ def render(planets,sail,date,frame,velocity, photonForce):
     else: image.save(os.getenv("APPDATA")+"\\EMCSS_simulationOutput\\frame"+str(frame).zfill(4)+".jpeg", quality=90)
 
 tracks = []
-def trackingExport(planets,sail):
+def trackingExport(planets, sail):
     # Add tracks for sun and sail
     sailPosition = sail.position.toTuple()
     trackThisFrame = {
@@ -135,20 +138,23 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
             sunGravitationalForce = (Constants.G * args.mass * Constants.planetMasses["Sun"]) / sunDistance**2
             solarSail.addForce((Sun.position - solarSail.position).normalized * sunGravitationalForce)
 
-            # Apply the force from photons on the sail
-            sailTrajectoryRadians = math.radians(args.sailRotation)
-            if sailTrajectoryRadians > math.pi: sailTrajectoryRadians -= math.pi
-            if sailTrajectoryRadians < math.pi / 2:
-                forceDirection = Vector(math.tan(sailTrajectoryRadians), 1)
-            else:
-                forceDirection = Vector(math.tan(180-sailTrajectoryRadians), -1)
-            forceDirection = Vector(forceDirection.y, -forceDirection.x) # Rotate 90
+            # Calculate the force direction
+            forceDirection1 = Vector(math.sin(math.radians(args.sailRotation)), math.cos(math.radians(args.sailRotation)))
+            forceDirection2 = forceDirection1 * -1 # There are 2 possible directions (opposite directions along same line)
+            further1 = solarSail.position + forceDirection1
+            further2 = solarSail.position + forceDirection2
+            distanceFromSun1 = (further1 - Sun.position).magnitude
+            distanceFromSun2 = (further2 - Sun.position).magnitude
+
+            # Choose which direction goes away from the sun
+            forceDirection = forceDirection1 if distanceFromSun1 > distanceFromSun2 else forceDirection2
+
+            # Apply force from photons
             location = ((solarSail.position - Sun.position) / Constants.cameraScale) * Constants.metresInAU
-            photonMomentumVector = forceDirection.normalized * 2 * photon.momentum * photon.collisionsAtPosition(solarSail.sailSize ** 2, location.magnitude)
+            colls = photon.collisionsAtPosition(solarSail.sailSize ** 2, location.magnitude)
+            photonMomentumVector = forceDirection.normalized * 2 * photon.momentum * colls
             photonMomentumVector *= solarSail.areaFacingSun() / solarSail.sailSize ** 2 # Account for how much the sail is facing the sun
             solarSail.addForce(photonMomentumVector / ((60*60*24) / args.calculationsPerDay))
-
-            # * DOES NOT ACCOUNT FOR PHOTON BOUNCING YET *
 
             # Calculate the acceleration and update the solar sail's position
             acceleration = solarSail.force / solarSail.mass
@@ -160,7 +166,7 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
         # Render or export the current frame
         currentFrame += 1
         timeBeforeRender = time.time()
-        if not args.exportAsJSON: render(planets,solarSail,date,currentFrame,solarSail.velocity,photonMomentumVector) # Standard render
+        if not args.exportAsJSON: render(planets,solarSail,date,currentFrame,solarSail.velocity,photonMomentumVector,forceDirection,colls) # Standard render
         else: trackingExport(planets,solarSail) # Export JSON tracking data for Blender or more processing somewhere else
         totalRenderingTime += time.time() - timeBeforeRender
         
