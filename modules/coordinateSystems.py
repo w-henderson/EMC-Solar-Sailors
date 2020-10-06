@@ -25,6 +25,8 @@ class Vector:
         distance = positionRelativeToSun.magnitude / Constants.cameraScale # AU
         long = math.atan(positionRelativeToSun.x / positionRelativeToSun.y) * (180 / math.pi)
         return Heliocentric(long,distance)
+    def toPerpendicular(self):
+        return Vector(self.y, -self.x)
 
     # Special methods to manipulate the vector
     def __add__(self,b):
