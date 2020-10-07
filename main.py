@@ -157,7 +157,7 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
             colls = photon.collisionsAtPosition(solarSail.sailSize ** 2, location.magnitude)
             photonMomentumVector = forceDirection.normalized * 2 * photon.momentum * colls
             photonMomentumVector *= solarSail.areaFacingSun() / solarSail.sailSize ** 2 # Account for how much the sail is facing the sun
-            solarSail.addForce(photonMomentumVector / ((60*60*24) / args.calculationsPerDay))
+            solarSail.addForce(photonMomentumVector) # was dividing by seconds here, didn't think that's needed
 
             # Calculate the acceleration and update the solar sail's position
             acceleration = solarSail.force / solarSail.mass # F = ma

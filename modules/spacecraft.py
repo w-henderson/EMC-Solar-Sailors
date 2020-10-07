@@ -22,8 +22,10 @@ class SolarSail:
         self.force += (force / Constants.metresInAU) * Constants.cameraScale
 
     def updatePosition(self,acceleration,simulatedSecondsSinceLastUpdate):
+        oldVelocity = self.velocity
         self.velocity += acceleration * simulatedSecondsSinceLastUpdate # v = u + at
-        self.position += self.velocity*simulatedSecondsSinceLastUpdate + acceleration*0.5*(simulatedSecondsSinceLastUpdate**2) # s = vt + 0.5at^2
+        self.position += (oldVelocity + self.velocity) * 0.5 * simulatedSecondsSinceLastUpdate # s = 1/2 (u+v)t
+        #self.position += self.velocity*simulatedSecondsSinceLastUpdate + acceleration*0.5*(simulatedSecondsSinceLastUpdate**2) # s = vt + 0.5at^2
         self.force = Vector(0,0) # reset force
 
     def areaFacingSun(self):

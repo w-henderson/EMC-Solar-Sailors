@@ -3,7 +3,7 @@
 # EMC Solar Sailors
 EMC Solar Sailors is a project from Exeter Mathematics School in which we are designing a spacecraft to harness the power of photons to get to Mars. This repo contains the code for our simulations and calculations.
 
-See the latest simulation demo on Streamable: [https://streamable.com/j7htrl](https://streamable.com/j7htrl).
+See the latest simulation demo on Streamable: [https://streamable.com/6rcw1e](https://streamable.com/6rcw1e).
 
 ## Usage
 Run `python main.py <launchDate>` for a quick simulation without changing any parameters. Launch date is required and should be provided in the format `dd/mm/yyyy`. The optional parameters are as follows:
@@ -34,6 +34,7 @@ A [Blender import script](https://github.com/w-henderson/EMC-Solar-Sailors/blob/
 - [**25/09/2020**](https://streamable.com/7dkyk2): implemented first photon force so the sail is pushed by photons but the photons do not bounce off so the direction and magnitude are both inaccurate
 - [**06/10/2020**](https://streamable.com/dx7v8b): implemented photon rebounding, simulation code is nearing completion
 - [**07/10/2020**](https://streamable.com/j7htrl): fixed major bug with photon rebounding and added more information in the top left
+- [**07/10/2020 Part 2**](https://streamable.com/6rcw1e): fixed acceleration bug so it's pretty much done
 
 # Credits
 
