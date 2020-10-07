@@ -12,7 +12,7 @@ class Photon:
         wavelengthInM = wavelength * 1e-9
         self.energy = (Constants.h * Constants.c) / wavelengthInM
         self.perSecond = Constants.sunPower / self.energy
-        self.momentum = Constants.h / self.wavelength # in kg.m/s
+        self.momentum = Constants.h / wavelengthInM # in kg.m/s
     
     def collisionsAtPosition(self,area,distance):
         perSqM = self.perSecond / (4 * pi * distance**2)
@@ -31,7 +31,7 @@ class GeneralSunPhoton:
             area = ((sideL + sideR) / 2) * width
             totalArea += area
         
-        self.perSecond = area
+        self.perSecond = totalArea
         self.momentum = Constants.h / (700 * 1e-9)
         
     def collisionsAtPosition(self,area,distance):

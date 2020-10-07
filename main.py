@@ -115,7 +115,7 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
     solarSail = SolarSail(args.mass, args.sailSize, args.sailRotation, launchPosition)
     solarSail.velocity = earthVelocity
 
-    photon = GeneralSunPhoton()
+    photon = Photon(700)
 
     # Loop through dates (one frame = one day for simplicity)
     for date in (startDate + datetime.timedelta(n) for n in range(cutoff)):
@@ -142,7 +142,7 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
             solarSail.addForce((Sun.position - solarSail.position).normalized * sunGravitationalForce)
 
             # Calculate the force direction
-            forceDirection1 = Vector(-math.cos(math.radians(-args.sailRotation)), math.sin(math.radians(-args.sailRotation)))
+            forceDirection1 = Vector(-math.cos(math.radians(-solarSail.sailRotation)), math.sin(math.radians(-solarSail.sailRotation)))
             forceDirection2 = forceDirection1 * -1 # There are 2 possible directions (opposite directions along same line)
             further1 = solarSail.position + forceDirection1
             further2 = solarSail.position + forceDirection2
@@ -160,7 +160,7 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
             solarSail.addForce(photonMomentumVector / ((60*60*24) / args.calculationsPerDay))
 
             # Calculate the acceleration and update the solar sail's position
-            acceleration = solarSail.force / solarSail.mass
+            acceleration = solarSail.force / solarSail.mass # F = ma
             solarSail.updatePosition(acceleration, (60*60*24) / args.calculationsPerDay)
             
         print("Calculated simulation up to "+date.strftime("%d/%m/%y")+", solar sail position was "+str(solarSail.position.toTuple())+"...", end="\r")
