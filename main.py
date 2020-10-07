@@ -58,7 +58,10 @@ def render(planets, sail, date, frame, velocity, photonForce, forceDirection, co
         "Velocity: " + str(velocity.magnitude) + "m/s",
         "Photon force: " + str(photonForce.magnitude) + "N",
         "Area facing sun: " + str(sail.areaFacingSun()),
-        "Collisions: " + str(colls)
+        "Collisions: " + str(colls),
+        "",
+        "Distance from Earth: " + str(((sail.position - planets["Earth"].toVector()).magnitude / Constants.cameraScale) * Constants.metresInAU) + "m",
+        "Distance from Mars: " + str(((sail.position - planets["Mars"].toVector()).magnitude / Constants.cameraScale) * Constants.metresInAU) + "m",
     ])
     draw.text((0,0), infoString, fill="red", font=font) # Render info text
     
@@ -139,7 +142,7 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
             solarSail.addForce((Sun.position - solarSail.position).normalized * sunGravitationalForce)
 
             # Calculate the force direction
-            forceDirection1 = Vector(math.sin(math.radians(args.sailRotation)), math.cos(math.radians(args.sailRotation)))
+            forceDirection1 = Vector(-math.cos(math.radians(-args.sailRotation)), math.sin(math.radians(-args.sailRotation)))
             forceDirection2 = forceDirection1 * -1 # There are 2 possible directions (opposite directions along same line)
             further1 = solarSail.position + forceDirection1
             further2 = solarSail.position + forceDirection2
