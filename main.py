@@ -28,6 +28,7 @@ parser.add_argument("--simulationLength", type=int, default=365, help="Number of
 parser.add_argument("--accountForPlanets", action="store_true", help="Account for gravitational fields other than the sun.")
 parser.add_argument("--lossless", action="store_true", help="Use lossless compression.")
 parser.add_argument("--exportAsJSON", action="store_true", help="Export as JSON tracking data instead of a video.")
+parser.add_argument("--startAngle", type=float, default=0.0, help="Angle to start narrowing down from. If not specified, runs a single simulation.")
 args = parser.parse_args()
 
 # Parse date argument from dd/mm/yyyy to a datetime object
@@ -97,7 +98,7 @@ def trackingExport(planets, sail):
     tracks.append(trackThisFrame)
 
 # Run simulation
-def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetime object and cutoff is the number of days to simulate
+def simulate(startDate,cutoff=args.simulationLength,angle=args.sailRotation): # Launch date is a datetime object and cutoff is the number of days to simulate
     # Set up output directory
     if "EMCSS_simulationOutput" in os.listdir(os.getenv("APPDATA")): shutil.rmtree(os.getenv("APPDATA")+"\\EMCSS_simulationOutput")
     os.mkdir(os.getenv("APPDATA")+"\\EMCSS_simulationOutput")
@@ -105,14 +106,16 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
     totalRenderingTime = 0
     totalCalculatingTime = 0
 
+    closestDistanceToMars = 1e99
+
     # Calculate earth's current direction to apply to sail
     earthPositionsBefore = [datetimeToPositions(startDate - datetime.timedelta(1/args.calculationsPerDay))["Earth"], datetimeToPositions(startDate)["Earth"]]
     earthVelocity = (earthPositionsBefore[1].toVector() - earthPositionsBefore[0].toVector()) / ((60 * 60 * 24) / args.calculationsPerDay)
-    #sailRelativeToEarth = Vector(math.sin(math.radians(args.launchTrajectory)) * Constants.moonHeightScreenSpace, -math.cos(math.radians(args.launchTrajectory)) * Constants.moonHeightScreenSpace)
+    sailRelativeToEarth = Vector(math.sin(0) * Constants.moonHeightScreenSpace, -math.cos(0) * Constants.moonHeightScreenSpace)
     launchPosition = earthPositionsBefore[1].toVector() # + sailRelativeToEarth
 
     # Set up solar sail with arguments
-    solarSail = SolarSail(args.mass, args.sailSize, args.sailRotation, launchPosition)
+    solarSail = SolarSail(args.mass, args.sailSize, angle, launchPosition)
     solarSail.velocity = earthVelocity
 
     photon = Photon(700)
@@ -162,22 +165,31 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
             # Calculate the acceleration and update the solar sail's position
             acceleration = solarSail.force / solarSail.mass # F = ma
             solarSail.updatePosition(acceleration, (60*60*24) / args.calculationsPerDay)
-            
-        print("Calculated simulation up to "+date.strftime("%d/%m/%y")+", solar sail position was "+str(solarSail.position.toTuple())+"...", end="\r")
-        totalCalculatingTime += time.time() - timeBeforeCalculation
 
-        # Render or export the current frame
-        currentFrame += 1
-        timeBeforeRender = time.time()
-        if not args.exportAsJSON: render(planets,solarSail,date,currentFrame,solarSail.velocity,photonMomentumVector,forceDirection,colls) # Standard render
-        else: trackingExport(planets,solarSail) # Export JSON tracking data for Blender or more processing somewhere else
-        totalRenderingTime += time.time() - timeBeforeRender
+            distanceFromMars = ((solarSail.position - planets["Mars"].toVector()).magnitude / Constants.cameraScale) * Constants.metresInAU
+            if distanceFromMars < closestDistanceToMars:
+                closestDistanceToMars = distanceFromMars
+            
+        # If not narrowing down on an angle
+        if args.startAngle == 0:
+            print("Calculated simulation up to "+date.strftime("%d/%m/%y")+", solar sail position was "+str(solarSail.position.toTuple())+"...", end="\r")
+            totalCalculatingTime += time.time() - timeBeforeCalculation
+
+            # Render or export the current frame
+            currentFrame += 1
+            timeBeforeRender = time.time()
+            if not args.exportAsJSON: render(planets,solarSail,date,currentFrame,solarSail.velocity,photonMomentumVector,forceDirection,colls) # Standard render
+            else: trackingExport(planets,solarSail) # Export JSON tracking data for Blender or more processing somewhere else
+            totalRenderingTime += time.time() - timeBeforeRender
+
+    if args.startAngle != 0:
+        return closestDistanceToMars
         
     if not args.exportAsJSON:
         # Use FFMPEG to convert the image sequence into a final mp4 video
         if args.lossless: os.system('ffmpeg -i "'+os.getenv("APPDATA")+'\\EMCSS_simulationOutput\\frame%04d.png" -framerate 30 -c:v libx264 -crf 22 simulation.mp4')
         else: os.system('ffmpeg -i "'+os.getenv("APPDATA")+'\\EMCSS_simulationOutput\\frame%04d.jpeg" -framerate 30 -c:v libx264 -crf 22 simulation.mp4')
-    else:
+    elif args.startAngle == 0:
         with open("simulation.json", "w") as f:
             f.write(repr(tracks).replace("'", '"')) # Quick and easy JSON export
 
@@ -188,4 +200,8 @@ def simulate(startDate,cutoff=args.simulationLength): # Launch date is a datetim
 
 # Start the simulation
 if __name__ == "__main__":
-    simulate(launchDate)
+    if args.startAngle == 0:
+        simulate(launchDate)
+    else:
+        for angle in range(100):
+            print("Angle:", (args.startAngle + (angle/100000)), "\tDistance:", simulate(launchDate, angle=(args.startAngle + (angle/100000))))
