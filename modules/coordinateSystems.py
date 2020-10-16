@@ -37,6 +37,8 @@ class Vector:
         return Vector(self.x*b, self.y*b)
     def __truediv__(self,b):
         return Vector(self.x/b, self.y/b)
+    def __eq__(self,b):
+        return self.toTuple() == b.toTuple()
 
 class Sun:
     position = Vector(960,540) # Position of sun in screen space
@@ -54,3 +56,6 @@ class Heliocentric:
         distance = self.distance # Distance from the sun, measured in Astronomical Units, equal to about 150 million km
         positionRelativeToSun = Vector(distance * sin, distance * cos) # Position of planet relative to sun
         return Sun.position + positionRelativeToSun * Constants.cameraScale # Position of planet in screen space
+
+    def __eq__(self,b):
+        return round(self.long,3) == round(b.long,3) and round(self.distance,3) == round(b.distance,3)

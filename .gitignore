@@ -4,3 +4,4 @@ simulationOutput/
 *.mp4
 *.json
 *.log
+.pytest_cache/

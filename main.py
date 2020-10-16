@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont # To render images
 from modules.coordinateSystems import Vector, Heliocentric, Sun # Custom classes for coordinate systems
 from modules.spacecraft import SolarSail # Custom class for solar sail
 from modules.constants import Constants # Constants are stored in a separate file for readability
-from modules.photons import Photon, GeneralSunPhoton # For calculations relating to photons
+from modules.photons import Photon # For calculations relating to photons
 
 # Parse arguments
 parser = argparse.ArgumentParser(description="Solar Sailors EMC Project")
