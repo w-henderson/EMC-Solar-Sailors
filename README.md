@@ -1,4 +1,5 @@
 ![Banner](images/banner.png)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/w-henderson/EMC-Solar-Sailors/EMC-Solar-Sailors%20Tests) ![GitHub contributors](https://img.shields.io/github/contributors/w-henderson/EMC-Solar-Sailors) ![GitHub pull requests](https://img.shields.io/github/issues-pr/w-henderson/EMC-Solar-Sailors) ![Language](https://img.shields.io/badge/language-Python-blue)
 
 # EMC Solar Sailors
 EMC Solar Sailors is a project from Exeter Mathematics School in which we are designing a spacecraft to harness the power of photons to get to Mars. This repo contains the code for our simulations and calculations.
