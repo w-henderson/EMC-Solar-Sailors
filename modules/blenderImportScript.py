@@ -39,9 +39,10 @@ for i in range(len(data)):
     for celestialBody in date.keys():
         # Set the location of each planet object to the simulated location
         obj = bpy.data.objects[celestialBody]
-        obj.location.x = float(date[celestialBody][0]) * scale
-        obj.location.y = float(date[celestialBody][1]) * scale
-        obj.location.z = float(date[celestialBody][2]) * scale
+        body = date[celestialBody]
+        obj.location.x = float(body[0]) * scale
+        obj.location.y = float(body[1]) * scale
+        obj.location.z = float(body[2]) * scale
         
         # Add a keyframe to save the current position
         obj.keyframe_insert(data_path="location",index=-1,frame=i)

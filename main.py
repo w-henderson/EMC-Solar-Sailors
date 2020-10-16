@@ -86,7 +86,8 @@ def trackingExport(planets, sail):
     sailPosition = sail.position.toTuple()
     trackThisFrame = {
         "Sun": [0,0,0],
-        "Sail": [sailPosition[0] - 960, sailPosition[1] - 540, 0] # Subtracts sun position because sun is central
+        "Sail": [sailPosition[0] - 960, sailPosition[1] - 540, 0], # Subtracts sun position because sun is central
+        "SailRotation": [0, 0, sail.sailRotation]
     }
 
     # Iterate through planets and add their positions
