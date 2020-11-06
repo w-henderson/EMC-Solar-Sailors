@@ -40,3 +40,6 @@ class SolarSail:
         bottomLeft = self.position - cornerPosition * renderSize
         point = (topRight.x, topRight.y, bottomLeft.x, bottomLeft.y)
         return point
+
+    def __repr__(self):
+        return "SolarSail(mass={}, sailSize={}, sailRotation={}, position={})".format(self.mass, self.sailSize, self.sailRotation, self.position)

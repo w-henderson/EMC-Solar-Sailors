@@ -8,7 +8,8 @@ See the latest simulation demo on Streamable: [https://streamable.com/6rcw1e](ht
 
 ## Usage
 Run `python main.py <launchDate>` for a quick simulation without changing any parameters. Launch date is required and should be provided in the format `dd/mm/yyyy`. The optional parameters are as follows:
-- `--mass` (float): mass of the spacecraft in kg, defaults to 1000
+- `--mass` (float): mass of the payload in kg, defaults to 1000
+- `--materialMass` (float): mass of the sail material in g/m^2, defaults to 2.6 ([mass of WES-Technik 2um aluminised mylar](https://homefly.com/reference/Covering%20Weights.htm))
 - `--sailSize` (float): side length of the sail in metres, defaults to 10
 - `--calculationsPerDay` (int): number of calculations to simulate per day, defaults to 24. The more calculations, the higher the accuracy. Don't go below 24.
 - `--simulationLength` (int): number of days to simulate for, defaults to 365.
@@ -20,7 +21,7 @@ Run `python main.py <launchDate>` for a quick simulation without changing any pa
 ### Example Code
 This is what I've been using to test the latest commit with a calculation every second for a year.
 ```py
-python main.py 06/10/2020 --mass 10 --sailSize 1000 --calculationsPerDay 1440
+python main.py 17/12/2020 --sailSize 500 --calculationsPerDay 1440
 ```
 
 ### Using Blender for rendering

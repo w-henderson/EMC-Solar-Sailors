@@ -20,7 +20,8 @@ from modules.photons import Photon # For calculations relating to photons
 # Parse arguments
 parser = argparse.ArgumentParser(description="Solar Sailors EMC Project")
 parser.add_argument("date", type=str, help="Date to launch.") # format dd/mm/yyyy
-parser.add_argument("--mass", type=float, default=1000.0, help="Mass of the spacecraft in km.")
+parser.add_argument("--mass", type=float, default=1000.0, help="Mass of the payload in kg.")
+parser.add_argument("--materialMass", type=float, default=2.6, help="Mass of sail material in g/m^2.")
 parser.add_argument("--sailSize", type=float, default=10.0, help="Side length of the sail in metres.")
 parser.add_argument("--sailRotation", type=float, default=0.0, help="Rotation of the sail in degrees.")
 parser.add_argument("--calculationsPerDay", type=int, default=24, help="Calculations to perform per day. Higher number = higher accuracy of position.")
@@ -115,7 +116,8 @@ def simulate(startDate,cutoff=args.simulationLength,angle=args.sailRotation): # 
     launchPosition = earthPositionsBefore[1].toVector() # + sailRelativeToEarth
 
     # Set up solar sail with arguments
-    solarSail = SolarSail(args.mass, args.sailSize, angle, launchPosition)
+    totalMass = args.mass + args.materialMass * 0.001 * args.sailSize ** 2
+    solarSail = SolarSail(totalMass, args.sailSize, angle, launchPosition)
     solarSail.velocity = earthVelocity
 
     photon = Photon(700)
@@ -135,13 +137,13 @@ def simulate(startDate,cutoff=args.simulationLength,angle=args.sailRotation): # 
                 for planet in planets.keys():
                     r = (planets[planet].toVector() - solarSail.position).magnitude / Constants.cameraScale # measured in AU
                     r = r * Constants.metresInAU # Convert to metres
-                    gravitationalForce = (Constants.G * args.mass * Constants.planetMasses[planet]) / r**2 # Gravitational force magnitude
+                    gravitationalForce = (Constants.G * solarSail.mass * Constants.planetMasses[planet]) / r**2 # Gravitational force magnitude
                     solarSail.addForce((planets[planet].toVector() - solarSail.position).normalized * gravitationalForce)
 
             # Apply the sun's gravity
             sunDistance = (Sun.position - solarSail.position).magnitude / Constants.cameraScale # measured in AU
             sunDistance = sunDistance * Constants.metresInAU # Convert to metres
-            sunGravitationalForce = (Constants.G * args.mass * Constants.planetMasses["Sun"]) / sunDistance**2
+            sunGravitationalForce = (Constants.G * solarSail.mass * Constants.planetMasses["Sun"]) / sunDistance**2
             solarSail.addForce((Sun.position - solarSail.position).normalized * sunGravitationalForce)
 
             # Calculate the force direction

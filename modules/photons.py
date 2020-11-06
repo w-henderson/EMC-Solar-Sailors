@@ -18,6 +18,9 @@ class Photon:
         perSqM = self.perSecond / (4 * pi * distance**2)
         return perSqM * area
 
+    def __repr__(self):
+        return "Photon({})".format(self.wavelength)
+
 class GeneralSunPhoton:
     def __init__(self):
         photonOfEachWavelength = [Photon(wavelength) for wavelength in range(1,2500)]

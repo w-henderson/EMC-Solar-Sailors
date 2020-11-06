@@ -39,6 +39,8 @@ class Vector:
         return Vector(self.x/b, self.y/b)
     def __eq__(self,b):
         return self.toTuple() == b.toTuple()
+    def __repr__(self):
+        return "Vector({},{})".format(self.x, self.y)
 
 class Sun:
     position = Vector(960,540) # Position of sun in screen space
@@ -59,3 +61,5 @@ class Heliocentric:
 
     def __eq__(self,b):
         return round(self.long,3) == round(b.long,3) and round(self.distance,3) == round(b.distance,3)
+    def __repr__(self):
+        return "Heliocentric(long={}, distance={})".format(self.long, self.distance)
