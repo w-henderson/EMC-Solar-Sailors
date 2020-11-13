@@ -5,3 +5,4 @@ simulationOutput/
 *.json
 *.log
 .pytest_cache/
+*.blend1

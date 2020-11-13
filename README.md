@@ -5,9 +5,10 @@
 EMC Solar Sailors is a project from Exeter Mathematics School in which we are designing a spacecraft to harness the power of photons to get to Mars. This repo contains the code for our simulations and calculations.
 
 See the latest simulation demo on Streamable: [https://streamable.com/27g921](https://streamable.com/27g921).
+See the latest Blender render on Streamable: [https://streamable.com/kq8n9h](https://streamable.com/kq8n9h).
 
 ## Update 13/11/2020
-We've completed the first part of the project: getting a 1000kg payload to Mars. The parameters we used were a sail size of 750x750m, a payload mass of 1000kg, the sail material was WES-Technik 2um aluminised mylar weighing 2.6g/m^2, a simulation length of 500 days, and all other parameters were default. Watch our final simulation [here](https://streamable.com/27g921).
+We've completed the first part of the project: getting a 1000kg payload to Mars. The parameters we used were a sail size of 750x750m, a payload mass of 1000kg, the sail material was WES-Technik 2um aluminised mylar weighing 2.6g/m^2, a simulation length of 500 days, and all other parameters were default. Watch our final simulation [here](https://streamable.com/27g921), or watch our stylised render [here](https://streamable.com/kq8n9h).
 
 ## Usage
 Run `python main.py <launchDate>` for a quick simulation without changing any parameters. Launch date is required and should be provided in the format `dd/mm/yyyy`. The optional parameters are as follows:
