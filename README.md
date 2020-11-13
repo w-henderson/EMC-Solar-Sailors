@@ -16,9 +16,7 @@ Run `python main.py <launchDate>` for a quick simulation without changing any pa
 - `--accountForPlanets` (switch/bool): whether to account for gravitational fields other than the sun's, False if not specified. This greatly increases the simulation time but may increase accuracy by about 0.015%.
 - `--lossless` (switch/bool): whether to use lossless compression, False if not specified. Lossless compression (png rather than jpeg) takes twice as long to render but may improve image quality.
 - `--exportAsJSON` (switch/bool): whether to export the simulation as JSON instead of a video, False if not specified. This is useful if you want to use Blender for rendering (see the "Using Blender for rendering" section) or to do more processing on the data afterwards.
-
-### Using Reinforcement Learning to find optimum parameters
-Run `python learn.py` to start the learning process. This will take a very long while (probably more than 12 hours) - you can end it with CTRL+C and it'll still output its best parameters at the time you end the process. It's still in development, so it's likely to be buggy.
+- `--returnDistance` (switch/bool): whether to ignore rendering altogether and just return the closest distance, False if not specified. This is useful for finding angles.
 
 ### Example Code
 This is what I've been using to test the latest commit with a calculation every second for a year.

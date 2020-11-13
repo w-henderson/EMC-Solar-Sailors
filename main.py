@@ -199,6 +199,7 @@ if __name__ == "__main__":
     parser.add_argument("--accountForPlanets", action="store_true", help="Account for gravitational fields other than the sun.")
     parser.add_argument("--lossless", action="store_true", help="Use lossless compression.")
     parser.add_argument("--exportAsJSON", action="store_true", help="Export as JSON tracking data instead of a video.")
+    parser.add_argument("--returnDistance", action="store_true", help="Whether to ignore rendering in order to find the best distance.")
     rawArgs = vars(parser.parse_args())
 
     # Parse date argument from dd/mm/yyyy to a datetime object
@@ -206,4 +207,7 @@ if __name__ == "__main__":
     launchDate = datetime.datetime(int(dateParts[2]),int(dateParts[1]),int(dateParts[0]),12)
 
     # Start simulation
-    simulate(launchDate, rawArgs)
+    if rawArgs["returnDistance"]:
+        print(simulate(launchDate, rawArgs, True))
+    else:
+        simulate(launchDate, rawArgs)
