@@ -8,7 +8,7 @@ See the latest simulation demo on Streamable: [https://streamable.com/27g921](ht
 See the latest Blender render on Streamable: [https://streamable.com/kq8n9h](https://streamable.com/kq8n9h).
 
 ## Update 13/11/2020
-We've completed the first part of the project: getting a 1000kg payload to Mars. The parameters we used were a sail size of 750x750m, a payload mass of 1000kg, the sail material was WES-Technik 2um aluminised mylar weighing 2.6g/m^2, a simulation length of 500 days, and all other parameters were default. Watch our final simulation [here](https://streamable.com/27g921), or watch our stylised render [here](https://streamable.com/kq8n9h).
+We've completed the first part of the project: getting a 1000kg payload to Mars. The parameters we used were a sail size of 750x750m, a launch trajectory of 135.071 degrees, a payload mass of 1000kg, the sail material was WES-Technik 2um aluminised mylar weighing 2.6g/m^2, a simulation length of 500 days, and all other parameters were default. Watch our final simulation [here](https://streamable.com/27g921), or watch our stylised render [here](https://streamable.com/kq8n9h).
 
 ## Usage
 Run `python main.py <launchDate>` for a quick simulation without changing any parameters. Launch date is required and should be provided in the format `dd/mm/yyyy`. The optional parameters are as follows:
